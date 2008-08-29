@@ -1,0 +1,37 @@
+<!DOCTYPE idea-plugin PUBLIC "Plugin/DTD"
+        "http://plugins.intellij.net/plugin.dtd">
+<idea-plugin url="http://osmedile.free.fr/ideastringmanip/">
+    <name>PasteAll</name>
+    <description>
+        <![CDATA[
+       <p>
+       Allow to paste all the content of the clipboard.
+       </p>
+
+       <p>Actions are available under Edit menu, or via the shortcut "alt shift M".</p>
+       ]]>
+    </description>
+    <change-notes>
+        <![CDATA[
+
+    ]]>
+    </change-notes>
+    <version>1.2</version>
+    <vendor email="osmedile@gmail.com">Olivier Smedile</vendor>
+    <idea-version since-build="7361" />
+    <actions>
+        <action id="osmedile.intellij.pasteall.PasteAllAction"
+                class="osmedile.intellij.pasteall.PasteAllAction"
+                text="pasteAll (older first)">
+            <add-to-group group-id="EditMenu" anchor="last" />
+            <keyboard-shortcut keymap="$default" first-keystroke="alt V"/>
+        </action>
+        <action id="osmedile.intellij.pasteall.PasteAllReverseAction"
+                class="osmedile.intellij.pasteall.PasteAllReverseAction"
+                text="pasteAll (recent first)">
+            <add-to-group group-id="EditMenu" anchor="last" />
+            <keyboard-shortcut keymap="$default" first-keystroke="alt shift V"/>
+
+        </action>
+    </actions>
+</idea-plugin>
