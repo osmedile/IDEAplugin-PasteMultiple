@@ -6,7 +6,7 @@ package osmedile.intellij.pasteall;
  */
 public class PasteAllReverseAction extends PasteAllAction {
 
-    public boolean getRecentFirst() {
-        return true;
+    public boolean getOlderFirst() {
+        return false;
     }
 }
