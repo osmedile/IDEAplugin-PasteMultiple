@@ -1,54 +1,67 @@
 <!DOCTYPE idea-plugin PUBLIC "Plugin/DTD"
         "http://plugins.intellij.net/plugin.dtd">
-<idea-plugin url="http://osmedile.free.fr/ideastringmanip/">
-    <name>PasteAll</name>
+<idea-plugin url="http://code.google.com/p/idea-pasteall/">
+    <name>Paste-Multiple</name>
     <description>
-        <![CDATA[
+       <![CDATA[
+       <h2>Paste multiple contents from clipboard at once</h2>
        <p>
-       Allow to paste all the content of the clipboard.
+       Enchance the default paste from history action. By allowing you to select
+       multiple content and paste all of them at once.
+       <ul>
+            <li>Filter you clipboard, to quickly find what to paste</li>
+            <li>Choose in which order you want to paste (older first or recent first)</li>
+       </ul>
        </p>
 
-       <p>Actions are available under Edit menu, or via the shortcut "alt shift M".</p>
+       <p>Actions are available under Edit menu, or via the shortcut "alt shift V".</p>
        ]]>
     </description>
-    <change-notes>
-        <![CDATA[
+    <!--<change-notes>-->
+    <!--<![CDATA[-->
 
-    ]]>
-    </change-notes>
+    <!--]]>-->
+    <!--</change-notes>-->
     <application-components>
         <component>
             <implementation-class>osmedile.intellij.pasteall.InitPasteAll</implementation-class>
         </component>
     </application-components>
-    <version>1.2</version>
+    <version>1.0</version>
     <vendor email="osmedile@gmail.com">Olivier Smedile</vendor>
     <idea-version since-build="7361" />
     <actions>
-        <action id="osmedile.intellij.pasteall.PasteAllAction"
-                class="osmedile.intellij.pasteall.PasteAllAction"
-                text="pasteAll (older first)">
-            <add-to-group group-id="EditMenu" anchor="last" />
-            <keyboard-shortcut keymap="$default" first-keystroke="alt V"/>
-        </action>
-        <action id="osmedile.intellij.pasteall.PasteAllReverseAction"
-                class="osmedile.intellij.pasteall.PasteAllReverseAction"
-                text="pasteAll (recent first)">
-            <add-to-group group-id="EditMenu" anchor="last" />
-            <!--<keyboard-shortcut keymap="$default" first-keystroke="alt shift V"/>-->
-
-        </action>
-        <action id="osmedile.intellij.pasteall.MarkAction"
-                class="osmedile.intellij.pasteall.MarkAction"
-                text="Paste All - Mark">
-            <add-to-group group-id="EditMenu" anchor="last" />
-        </action>
         <action id="osmedile.intellij.pasteall.ChoosePasteAllAction"
                 class="osmedile.intellij.pasteall.ChoosePasteAllAction"
-                text="Choose paste all">
+                text="Paste multiple ...">
             <add-to-group group-id="EditMenu" anchor="last" />
             <keyboard-shortcut keymap="$default"
                                first-keystroke="alt shift V" />
         </action>
+
+        <group id="osmedile.pasteall" text="Paste multiple (advanced)" popup="true">
+            <add-to-group group-id="EditMenu" anchor="last" />
+
+            <action id="osmedile.intellij.pasteall.PasteAllAction"
+                    class="osmedile.intellij.pasteall.PasteAllAction"
+                    text="paste all clipboard (older first)">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt V" />
+            </action>
+            <action id="osmedile.intellij.pasteall.PasteAllReverseAction"
+                    class="osmedile.intellij.pasteall.PasteAllReverseAction"
+                    text="paste all clipboard (recent first)">
+            </action>
+
+            <action id="osmedile.intellij.pasteall.MarkAction"
+                    class="osmedile.intellij.pasteall.MarkAction"
+                    text="Set mark (only items copied from now will be pasted)">
+            </action>
+            <action id="osmedile.intellij.pasteall.CancelMarkAction"
+                    class="osmedile.intellij.pasteall.CancelMarkAction"
+                    text="Cancel mark">
+            </action>
+        </group>
+
+
     </actions>
 </idea-plugin>
