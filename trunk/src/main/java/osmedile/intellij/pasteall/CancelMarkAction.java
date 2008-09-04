@@ -9,7 +9,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 public class CancelMarkAction extends com.intellij.openapi.actionSystem.AnAction {
 
     public void actionPerformed(AnActionEvent anActionEvent) {
-
         PasteAllAction.cancelMark();
     }
 }

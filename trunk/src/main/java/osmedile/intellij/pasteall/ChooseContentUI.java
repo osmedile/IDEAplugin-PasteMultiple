@@ -1,11 +1,16 @@
 package osmedile.intellij.pasteall;
 
+import com.intellij.codeInsight.template.impl.TemplateEditorUtil;
+import com.intellij.codeInsight.template.impl.TemplateImpl;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.ui.ColoredListCellRenderer;
+import com.intellij.ui.SimpleTextAttributes;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -13,19 +18,15 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.datatransfer.Transferable;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ChooseContentUI extends JDialog {
     private JPanel contentPane;
     private JButton pasteBt;
     private JButton buttonCancel;
-    private JList transferableList;
+    private JList transList;
     private JRadioButton recentFirst;
     private JRadioButton olderFirst;
     private JSplitPane splitPane;
@@ -38,86 +39,40 @@ public class ChooseContentUI extends JDialog {
     private ArrayList<String> shortened;
     private ChooseContentUI.MyListModel model;
 
+    private JComboBox templateBox;
+    private JPanel templatePanel;
+
+    private Editor templateViewer;
+
     /**
      * Void panel used to hide preview, when no item is selected
      */
     private JPanel voidPanel;
 
-    public ChooseContentUI() {
-        $$$setupUI$$$();
-        setContentPane(contentPane);
-        setModal(true);
-        getRootPane().setDefaultButton(pasteBt);
+    private static final Icon TEXT_ICON =
+            IconLoader.getIcon("/fileTypes/text.png");
 
-        pasteBt.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+    private List<TemplateImpl> templateList;
+    private JCheckBox useTemplatChk;
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
-
-// call onCancel() when cross is clicked
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                onCancel();
-            }
-        });
-
-// call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-
-        //More specific
-        voidPanel = new JPanel();
-        voidPanel.setMinimumSize(new Dimension(0, 0));
-
-        shortened = new ArrayList<String>();
-        filter.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                super.keyTyped(e);
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                super.keyPressed(e);
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                rebuildListContent();
-            }
-        });
-
-        model = new MyListModel();
-        transferableList.setModel(model);
-
-        rebuildListContent();
-
-
-        transferableList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                updateViewerForSelection();
-            }
-        }
-        );
-        updateViewerForSelection();
+    public JCheckBox getUseTemplatChk() {
+        return useTemplatChk;
     }
 
-    public ChooseContentUI(Project project, Editor editor) {
-        this();
-        this.project = project;
-        this.editor = editor;
+    public JComboBox getTemplateBox() {
+        return templateBox;
+    }
+
+    public Editor getTemplateViewer() {
+        return templateViewer;
+    }
+
+    public JRadioButton getOlderFirst() {
+        return olderFirst;
+    }
+
+    public JRadioButton getRecentFirst() {
+        return recentFirst;
     }
 
     /**
@@ -128,6 +83,7 @@ public class ChooseContentUI extends JDialog {
      * @noinspection ALL
      */
     private void $$$setupUI$$$() {
+        createUIComponents();
         contentPane = new JPanel();
         contentPane.setLayout(new GridBagLayout());
         contentPane.setPreferredSize(new Dimension(520, 570));
@@ -136,7 +92,7 @@ public class ChooseContentUI extends JDialog {
         GridBagConstraints gbc;
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -189,10 +145,10 @@ public class ChooseContentUI extends JDialog {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         panel3.add(splitPane, gbc);
-        transferableList = new JList();
-        transferableList.setMinimumSize(new Dimension(200, 130));
-        transferableList.setPreferredSize(new Dimension(250, 350));
-        splitPane.setLeftComponent(transferableList);
+        transList = new JList();
+        transList.setMinimumSize(new Dimension(200, 130));
+        transList.setPreferredSize(new Dimension(250, 350));
+        splitPane.setLeftComponent(transList);
         final JPanel panel4 = new JPanel();
         panel4.setLayout(new GridBagLayout());
         gbc = new GridBagConstraints();
@@ -245,6 +201,30 @@ public class ChooseContentUI extends JDialog {
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.WEST;
         panel5.add(olderFirst, gbc);
+        templatePanel = new JPanel();
+        templatePanel.setLayout(new GridBagLayout());
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.weightx = 1.0;
+        gbc.weighty = 0.5;
+        gbc.fill = GridBagConstraints.BOTH;
+        contentPane.add(templatePanel, gbc);
+        templatePanel.setBorder(BorderFactory.createTitledBorder("Template"));
+        templateBox.setEditable(false);
+        templateBox.putClientProperty("html.disable", Boolean.TRUE);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        templatePanel.add(templateBox, gbc);
+        useTemplatChk = new JCheckBox();
+        useTemplatChk.setText("Use template");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        templatePanel.add(useTemplatChk, gbc);
         ButtonGroup buttonGroup;
         buttonGroup = new ButtonGroup();
         buttonGroup.add(olderFirst);
@@ -256,6 +236,187 @@ public class ChooseContentUI extends JDialog {
      */
     public JComponent $$$getRootComponent$$$() {
         return contentPane;
+    }
+
+
+    private static class MyListCellRenderer extends ColoredListCellRenderer {
+        protected void customizeCellRenderer(JList list, Object value,
+                                             int index, boolean selected,
+                                             boolean hasFocus) {
+            setIcon(TEXT_ICON);
+            if (index <= 9) {
+                append(String.valueOf((index + 1) % 10) + "  ",
+                        SimpleTextAttributes.GRAYED_ATTRIBUTES);
+            }
+//            append((String) value, SimpleTextAttributes.REGULAR_ATTRIBUTES);
+            String s = (String) value;
+            int newLineIdx = s.indexOf('\n');
+            if (newLineIdx == -1) {
+                append(s.trim(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+            } else {
+                append(s.substring(0, newLineIdx).trim() + " ...",
+                        SimpleTextAttributes.REGULAR_ATTRIBUTES);
+            }
+        }
+    }
+
+    public ChooseContentUI() {
+        $$$setupUI$$$();
+        setContentPane(contentPane);
+        setModal(true);
+        getRootPane().setDefaultButton(pasteBt);
+
+        pasteBt.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onOK();
+            }
+        });
+
+        buttonCancel.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onCancel();
+            }
+        });
+
+        // call onCancel() when cross is clicked
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                onCancel();
+            }
+        });
+
+        // call onCancel() on ESCAPE
+        contentPane.registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onCancel();
+            }
+        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        //More specific
+        voidPanel = new JPanel();
+        voidPanel.setMinimumSize(new Dimension(0, 0));
+
+        shortened = new ArrayList<String>();
+        filter.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                super.keyTyped(e);
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                super.keyPressed(e);
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                rebuildListContent();
+            }
+        });
+
+        model = new MyListModel();
+        transList.setModel(model);
+
+
+        rebuildListContent();
+
+
+        transList.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.isConsumed() || e.getClickCount() != 2 ||
+                        e.isPopupTrigger()) {
+                    return;
+                }
+                onOK();
+            }
+        });
+        transList.addKeyListener(new KeyAdapter() {
+            public void keyReleased(KeyEvent e) {
+//                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+//                    int selectedIndex = getSelectedIndex();
+//                    int size = myAllContents.size();
+//                    removeContentAt(myAllContents.get(selectedIndex));
+//                    rebuildListContent();
+//                    if (size == 1) {
+//                        close(CANCEL_EXIT_CODE);
+//                        return;
+//                    }
+//                    myList.setSelectedIndex(
+//                            Math.min(selectedIndex, myAllContents.size() - 1));
+//                } else
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    onOK();
+                } else {
+                    final char aChar = e.getKeyChar();
+                    if (aChar >= '0' && aChar <= '9') {
+                        int idx = aChar == '0' ? 9 : aChar - '1';
+                        if (idx < shortened.size()) {
+                            transList.setSelectedIndex(idx);
+                        }
+                    }
+                }
+            }
+        });
+
+        transList.setCellRenderer(new MyListCellRenderer());
+        transList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                updateViewerForSelection();
+                if (transList.getSelectedIndices().length > 0) {
+                    pasteBt.setEnabled(true);
+                } else {
+                    pasteBt.setEnabled(false);
+                }
+            }
+        }
+        );
+
+        updateViewerForSelection();
+
+        //templates
+        Document doc = EditorFactory.getInstance().createDocument("");
+        templateViewer = EditorFactory.getInstance().createEditor(doc, project);
+        templateViewer.getComponent().setPreferredSize(new Dimension(300, 300));
+        templateViewer.getSettings().setFoldingOutlineShown(false);
+        templateViewer.getSettings().setLineNumbersShown(true);
+        templateViewer.getSettings().setLineMarkerAreaShown(false);
+
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.BOTH;
+        templatePanel.add(templateViewer.getComponent(), gbc);
+        ButtonGroup buttonGroup;
+        buttonGroup = new ButtonGroup();
+        buttonGroup.add(olderFirst);
+        buttonGroup.add(recentFirst);
+
+        templateBox.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                if (selectedTplIdx != templateBox.getSelectedIndex()) {
+                    selectedTplIdx = templateBox.getSelectedIndex();
+                    TemplateImpl template = templateList.get(selectedTplIdx);
+                    templateViewer.getDocument().setText(template.getString());
+                    TemplateEditorUtil.setHighlighter(templateViewer,
+                            template.getTemplateContext());
+                }
+            }
+        });
+    }
+
+    private int selectedTplIdx = -1;
+
+
+    public ChooseContentUI(Project project, Editor editor) {
+        this();
+        this.project = project;
+        this.editor = editor;
     }
 
     public class MyListModel extends AbstractListModel {
@@ -272,8 +433,21 @@ public class ChooseContentUI extends JDialog {
         }
     }
 
+
     private void createUIComponents() {
-        // TODO: place custom component creation code here
+        templateList = TemplateUtils.getSelectionTemplates();
+        templateBox = new JComboBox(getTemplateDesc(templateList));
+    }
+
+    public static String[] getTemplateDesc(List<TemplateImpl> templates) {
+        String[] tplIds = new String[templates.size()];
+        for (int i = 0; i < templates.size(); i++) {
+            tplIds[i] = templates.get(i).getKey() + " " +
+                    templates.get(i).getDescription();
+
+        }
+
+        return tplIds;
     }
 
     private void rebuildListContent() {
@@ -292,19 +466,41 @@ public class ChooseContentUI extends JDialog {
                 }
             }
         }
+
+//        for (int i = 0; i < shortened.size(); i++) {
+//            String content = shortened.get(i);
+//            String fullString = content;
+//            fullString = StringUtil.convertLineSeparators(fullString, "\n");
+//            int newLineIdx = fullString.indexOf('\n');
+//            if (newLineIdx == -1) {
+//                shortened.set(i, fullString.trim());
+//            } else {
+//            }
+//        }
+
         model.fireChanges();
 
+        //remove selection
+        transList.setSelectedIndex(-1);
+        updateViewerForSelection();
     }
 
     private void onOK() {
+        final String template;
+        if (useTemplatChk.isSelected()) {
+            template = templateViewer.getDocument().getText();
+        } else {
+            template = null;
+        }
+
         PasteUtils.pasteAll(editor, true, olderFirst.isSelected(),
-                getSelectedValues());
+                getSelectedValues(), template);
 
         dispose();
     }
 
     public String[] getSelectedValues() {
-        final Object[] selected = transferableList.getSelectedValues();
+        final Object[] selected = transList.getSelectedValues();
         String[] selects = new String[selected.length];
         System.arraycopy(selected, 0, selects, 0, selected.length);
 
@@ -321,17 +517,16 @@ public class ChooseContentUI extends JDialog {
     }
 
     private void onCancel() {
-        //Nothing to do
         dispose();
     }
 
     private void updateViewerForSelection() {
-        if (transferableList.getSelectedValue() == null) {
+        if (transList.getSelectedValue() == null) {
             splitPane.setRightComponent(voidPanel);
             splitPane.setDividerLocation(1d);
             return;
         }
-        String fullString = (String) transferableList.getSelectedValue();
+        String fullString = (String) transList.getSelectedValue();
         fullString = StringUtil.convertLineSeparators(fullString);
         if (myViewer != null) {
             EditorFactory.getInstance().releaseEditor(myViewer);
@@ -340,14 +535,15 @@ public class ChooseContentUI extends JDialog {
         Document doc =
                 EditorFactory.getInstance().createDocument(fullString);
         myViewer = EditorFactory.getInstance().createViewer(doc, project);
-        myViewer.getComponent().setPreferredSize(new Dimension(300, 500));
+        myViewer.getComponent().setPreferredSize(new Dimension(300, 300));
         myViewer.getSettings().setFoldingOutlineShown(false);
-        myViewer.getSettings().setLineNumbersShown(false);
+        myViewer.getSettings().setLineNumbersShown(true);
         myViewer.getSettings().setLineMarkerAreaShown(false);
         splitPane.setRightComponent(myViewer.getComponent());
         splitPane.setDividerLocation(0.6);
 
         splitPane.revalidate();
     }
+
 
 }

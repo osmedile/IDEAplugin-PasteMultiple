@@ -39,34 +39,20 @@ public class PasteUtils {
         }
     }
 
-    public static void pasteAll(Editor editor, Transferable[] trans,
-                                boolean newLine,
-                                boolean olderFirst, int limit) {
 
-        //Recent items are first in transferable array
-
-        List<String> values = new ArrayList<String>();
-        for (int i = 0; i < trans.length && (limit < 0 || values.size() < limit); i++) {
-            Transferable tran = trans[i];
-            String s = getValue(tran);
-            if (StringUtil.isNotEmpty(s)) {
-                values.add(s);
-            }
-        }
-
-        pasteAll(editor, newLine, olderFirst,
-                values.toArray(new String[values.size()]));
-    }
-
-    public static void pasteAll(Editor editor, boolean newLine,
-                                boolean olderFirst, String[] values) {
+    public static StringBuilder getContent(boolean newLine, boolean olderFirst,
+                                           String[] values, String template) {
         StringBuilder sb = new StringBuilder();
 
         if (olderFirst) {
             CollectionUtils.reverseArray(values);
         }
         for (String value : values) {
-            sb.append(value);
+            if (template != null) {
+                sb.append(template.replaceAll("\\$SELECTION\\$", value));
+            } else {
+                sb.append(value);
+            }
             if (newLine) {
                 sb.append("\n");
             }
@@ -75,17 +61,38 @@ public class PasteUtils {
             sb.deleteCharAt(sb.length() - 1);
         }
 
+        return sb;
+    }
+
+    public static void pasteAll(Editor editor, Transferable[] trans,
+                                boolean newLine,
+                                boolean olderFirst, int limit, String template) {
+
+        //Recent items are first in transferable array
+
+        List<String> values = new ArrayList<String>();
+        for (int i = 0;
+             i < trans.length && (limit < 0 || values.size() < limit); i++) {
+            Transferable tran = trans[i];
+            String s = getValue(tran);
+            if (StringUtil.isNotEmpty(s)) {
+                values.add(s);
+            }
+        }
+
+        pasteAll(editor, newLine, olderFirst,
+                values.toArray(new String[values.size()]), template);
+    }
+
+    public static void pasteAll(Editor editor, boolean newLine,
+                                boolean olderFirst, String[] values, String template) {
+
+        StringBuilder sb = getContent(newLine, olderFirst, values, template);
         if (editor.isColumnMode()) {
             insertStringAsBlock(editor, sb.toString());
         } else {
             EditorModificationUtil.insertStringAtCaret(editor, sb.toString());
         }
-    }
-
-    public static void pasteAll(Editor editor, Transferable[] trans,
-                                boolean newLine,
-                                boolean olderFirst) {
-        pasteAll(editor, trans, newLine, olderFirst, -1);
     }
 
 
@@ -105,8 +112,6 @@ public class PasteUtils {
                     final LogicalPosition start =
                             selectionModel.getBlockStart();
                     final LogicalPosition end = selectionModel.getBlockEnd();
-                    assert start != null;
-                    assert end != null;
                     LogicalPosition caret = new LogicalPosition(
                             Math.min(start.line, end.line),
                             Math.min(start.column, end.column));
