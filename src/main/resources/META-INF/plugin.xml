@@ -3,7 +3,7 @@
 <idea-plugin url="http://code.google.com/p/idea-pasteall/">
     <name>Paste-Multiple</name>
     <description>
-       <![CDATA[
+        <![CDATA[
        <h2>Paste multiple contents from clipboard at once</h2>
        <p>
        Enchance the default paste from history action. By allowing you to select
@@ -39,7 +39,9 @@
                                first-keystroke="alt shift V" />
         </action>
 
-        <group id="osmedile.pasteall" text="Paste multiple (advanced)" popup="true">
+
+        <group id="osmedile.pasteall" text="Paste multiple (advanced)"
+               popup="true">
             <add-to-group group-id="EditMenu" anchor="last" />
 
             <action id="osmedile.intellij.pasteall.PasteAllAction"
@@ -50,6 +52,13 @@
             <action id="osmedile.intellij.pasteall.PasteAllReverseAction"
                     class="osmedile.intellij.pasteall.PasteAllReverseAction"
                     text="paste all clipboard (recent first)">
+            </action>
+
+            <action id="osmedile.intellij.pasteall.PasteAllWithTemplateAction"
+                    class="osmedile.intellij.pasteall.PasteAllWithTemplateAction"
+                    text="paste all clipboard (older first) with template">
+                <keyboard-shortcut keymap="$default"
+                                   first-keystroke="shift alt T" />
             </action>
 
             <action id="osmedile.intellij.pasteall.MarkAction"

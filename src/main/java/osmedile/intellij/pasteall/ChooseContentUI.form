@@ -11,7 +11,7 @@
     <children>
       <grid id="94766" layout-manager="GridBagLayout">
         <constraints>
-          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
           <gridbag top="5" left="5" bottom="5" right="5" weightx="1.0" weighty="0.0"/>
         </constraints>
         <properties/>
@@ -72,7 +72,7 @@
             </properties>
             <border type="none"/>
             <children>
-              <component id="86774" class="javax.swing.JList" binding="transferableList">
+              <component id="86774" class="javax.swing.JList" binding="transList">
                 <constraints>
                   <splitpane position="left"/>
                 </constraints>
@@ -138,6 +138,37 @@
             <properties>
               <selected value="true"/>
               <text value="Bottom to top (older to recent)" noi18n="true"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <grid id="584fe" binding="templatePanel" layout-manager="GridBagLayout">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="1.0" weighty="0.5"/>
+        </constraints>
+        <properties/>
+        <border type="none" title="Template"/>
+        <children>
+          <component id="7e78c" class="javax.swing.JComboBox" binding="templateBox" custom-create="true">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <gridbag weightx="0.0" weighty="0.0"/>
+            </constraints>
+            <properties>
+              <editable value="false"/>
+            </properties>
+            <clientProperties>
+              <html.disable class="java.lang.Boolean" value="true"/>
+            </clientProperties>
+          </component>
+          <component id="293b0" class="javax.swing.JCheckBox" binding="useTemplatChk">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <gridbag weightx="0.0" weighty="0.0"/>
+            </constraints>
+            <properties>
+              <text value="Use template" noi18n="true"/>
             </properties>
           </component>
         </children>

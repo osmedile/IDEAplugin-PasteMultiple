@@ -13,7 +13,6 @@ import java.awt.datatransfer.Transferable;
  */
 public class InitPasteAll implements ApplicationComponent {
     public InitPasteAll() {
-
     }
 
     public void initComponent() {

@@ -30,7 +30,7 @@ public class PasteAllAction extends EditorAction {
                                            DataContext dataContext) {
                 PasteUtils.pasteAll(editor,
                         CopyPasteManager.getInstance().getAllContents(),
-                        getNewLine(), getOlderFirst(), numberOfItems);
+                        getNewLine(), getOlderFirst(), numberOfItems, null);
             }
         });
     }
