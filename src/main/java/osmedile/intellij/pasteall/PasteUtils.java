@@ -3,6 +3,7 @@ package osmedile.intellij.pasteall;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.openapi.editor.LogicalPosition;
+import com.intellij.openapi.editor.RawText;
 import com.intellij.openapi.editor.SelectionModel;
 import com.intellij.openapi.util.text.LineTokenizer;
 import com.intellij.openapi.util.text.StringUtil;
@@ -21,19 +22,55 @@ import java.util.List;
  * @version $Id$
  */
 public class PasteUtils {
+//
+//    @NotNull
+//    public static String getValue(Transferable tran) {
+//        DataFlavor flavor;
+//        flavor = DataFlavor.stringFlavor;
+//        if (tran.isDataFlavorSupported(flavor)) {
+//            try {
+//                return tran.getTransferData(flavor).toString();
+//            } catch (UnsupportedFlavorException e) {
+//                return "";
+//            } catch (IOException e) {
+//                return "";
+//            }
+//        } else {
+//            return "";
+//        }
+//    }
+
+    //
 
     @NotNull
     public static String getValue(Transferable tran) {
-        DataFlavor flavor;
-        flavor = DataFlavor.stringFlavor;
-        if (tran.isDataFlavorSupported(flavor)) {
+        if (tran == null) {
+            return "";
+        }
+        RawText raw = null;
+        try {
+            raw = (RawText) tran.getTransferData(RawText.FLAVOR);
+        } catch (UnsupportedFlavorException e) {
+            // OK. raw will be null and we'll get plain string
+        } catch (IOException e) {
+            // OK. raw will be null and we'll get plain string
+        }
+
+        String s;
+        if (raw != null) {
+            s = raw.rawText;
+        } else {
             try {
-                return tran.getTransferData(flavor).toString();
+                s = (String) tran.getTransferData(DataFlavor.stringFlavor);
             } catch (UnsupportedFlavorException e) {
                 return "";
             } catch (IOException e) {
                 return "";
             }
+        }
+
+        if (s != null) {
+            return StringUtil.convertLineSeparators(s, "\n");
         } else {
             return "";
         }
@@ -66,7 +103,8 @@ public class PasteUtils {
 
     public static void pasteAll(Editor editor, Transferable[] trans,
                                 boolean newLine,
-                                boolean olderFirst, int limit, String template) {
+                                boolean olderFirst, int limit,
+                                String template) {
 
         //Recent items are first in transferable array
 
@@ -85,7 +123,8 @@ public class PasteUtils {
     }
 
     public static void pasteAll(Editor editor, boolean newLine,
-                                boolean olderFirst, String[] values, String template) {
+                                boolean olderFirst, String[] values,
+                                String template) {
 
         StringBuilder sb = getContent(newLine, olderFirst, values, template);
         if (editor.isColumnMode()) {
