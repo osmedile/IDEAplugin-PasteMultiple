@@ -1,74 +1,70 @@
 package osmedile.intellij.pasteall;
 
 import com.intellij.codeInsight.template.impl.TemplateImpl;
-import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
+import com.intellij.openapi.command.UndoConfirmationPolicy;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.actionSystem.EditorAction;
-import com.intellij.openapi.editor.actionSystem.EditorActionHandler;
-import com.intellij.openapi.editor.actionSystem.EditorWriteActionHandler;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.PopupChooserBuilder;
-import com.intellij.openapi.util.Ref;
 
 import javax.swing.*;
+import java.awt.event.MouseListener;
 import java.util.List;
 
 /**
  * @author Olivier Smedile
  * @version $Id$
  */
-public class PasteAllWithTemplateAction extends EditorAction {
-
-    private boolean newLine = true;
+public class PasteAllWithTemplateAction extends AnAction {
 
     private List<TemplateImpl> templates;
     private JList list;
     private PopupChooserBuilder popup;
-
-
-    public PasteAllWithTemplateAction(EditorActionHandler editorActionHandler) {
-        super(editorActionHandler);
-    }
+    private Editor editor;
 
     public PasteAllWithTemplateAction() {
-        super(null);
+        templates = TemplateUtils.getSelectionTemplates();
+        list = new JList(ChooseContentUI.getTemplateDesc(templates));
+        popup = JBPopupFactory.getInstance().createListPopupBuilder(list);
 
-        this.setupHandler(new EditorWriteActionHandler() {
-            public void executeWriteAction(final Editor editor,
-                                           DataContext dataContext) {
-
-                if (popup == null) {
-                    templates = TemplateUtils.getSelectionTemplates();
-
-                    list = new JList(
-                            ChooseContentUI.getTemplateDesc(templates));
-
-                    popup = JBPopupFactory.getInstance()
-                            .createListPopupBuilder(list);
-                }
-
-                popup.setItemChoosenCallback(new Runnable() {
+        popup.setTitle("Paste with template");
+        popup.setItemChoosenCallback(new Runnable() {
+            public void run() {
+                CommandProcessor.getInstance().executeCommand(
+                        editor.getProject(), new Runnable() {
                     public void run() {
-                        CommandProcessor.getInstance().executeCommand(
-                                editor.getProject(), new Runnable() {
-                            public void run() {
-                                pasteItIDEA(editor);
-                            }
-                        },
-                                "Paste with template",
-                                new Ref(editor.getDocument()));
+                        pasteItIDEA();
                     }
-                });
-                popup.createPopup().showInBestPositionFor(editor);
+                },
+                        "Paste with template", null,
+                        UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION);
+
+
             }
         });
+        popup.setMovable(true);
     }
 
-    public void pasteItIDEA(final Editor editor) {
+    public void actionPerformed(AnActionEvent e) {
+        editor = e.getData(DataKeys.EDITOR);
+
+        //remove all listeners, otherwise they will be registered once again
+        // every time the action is called
+        final MouseListener[] listeners = list.getMouseListeners();
+        for (MouseListener listener : listeners) {
+            list.removeMouseListener(listener);
+        }
+
+        popup.createPopup().showCenteredInCurrentWindow(editor.getProject());
+    }
+
+    public void pasteItIDEA() {
         if (editor.isViewer()) {
             return;
         }
@@ -90,17 +86,14 @@ public class PasteAllWithTemplateAction extends EditorAction {
 
     private void pasteIt(Editor editor) {
         TemplateImpl tpl = templates.get(list.getSelectedIndex());
+
         PasteUtils.pasteAll(editor,
                 CopyPasteManager.getInstance().getAllContents(),
-                getNewLine(), getOlderFirst(),
+                true, getOlderFirst(),
                 PasteAllAction.getNumberOfItems(), tpl.getString());
     }
 
 // --------------------- GETTER / SETTER METHODS ---------------------
-
-    public boolean getNewLine() {
-        return newLine;
-    }
 
     public boolean getOlderFirst() {
         return true;

@@ -6,15 +6,47 @@
         <![CDATA[
        <h2>Paste multiple contents from clipboard at once</h2>
        <p>
-       Enchance the default paste from history action. By allowing you to select
-       multiple content and paste all of them at once.
+       Enhance the default paste from history action. By allowing you to select
+       multiple content and paste all of them at once.<br /><br />
+
+       Features:
        <ul>
             <li>Filter you clipboard, to quickly find what to paste</li>
             <li>Choose in which order you want to paste (older first or recent first)</li>
+            <li>Optionnaly, apply a live template to pasted items</li>
        </ul>
+       <span style="font-weight: bolder; font-style: italic; color: red;">
+            Warning: only $SELECTION$ variable of Live templates is evaluated
+       </span>
+       <br />
+       This action is available under Edit Menu, or via the shortcut "alt shift V".
        </p>
 
-       <p>Actions are available under Edit menu, or via the shortcut "alt shift V".</p>
+       <p>
+       <h4>Other actions</h4>
+       <ul>
+        <li>Paste all the clipboard (older items first)</li>
+        <li>Paste all the clipboard (recent items first)</li>
+        <li>Paste all the clipboard and apply a live template before pasting (older items first)</li>
+        <li>Paste all the clipboard and apply a live template before pasting (recent items first)</li>
+       </ul>
+       <span style="font-weight: bolder; font-style: italic; color: red;">
+           Warning: that only $SELECTION$ variable of Live templates is evaluated
+       </span>
+       <br />
+        All actions are available under Edit menu -> "Paste multiple".
+       </p>
+
+        <p>
+        <h4>Advanced actions: Mark</h4>
+            If you don't want to paste all the clipboard with the previous actions,
+            you can use mark actions.
+            When you set the mark, only contents copied after that will be pasted.
+            This apply to all actions.<br />
+            <br />
+            Mark actions are available under Edit menu -> "Paste multiple".
+        </p>
+
        ]]>
     </description>
     <!--<change-notes>-->
@@ -46,20 +78,24 @@
 
             <action id="osmedile.intellij.pasteall.PasteAllAction"
                     class="osmedile.intellij.pasteall.PasteAllAction"
-                    text="paste all clipboard (older first)">
+                    text="Paste all clipboard">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt V" />
             </action>
             <action id="osmedile.intellij.pasteall.PasteAllReverseAction"
                     class="osmedile.intellij.pasteall.PasteAllReverseAction"
-                    text="paste all clipboard (recent first)">
+                    text="Paste all clipboard (recent first)">
             </action>
 
             <action id="osmedile.intellij.pasteall.PasteAllWithTemplateAction"
                     class="osmedile.intellij.pasteall.PasteAllWithTemplateAction"
-                    text="paste all clipboard (older first) with template">
+                    text="Paste all clipboard with template">
                 <keyboard-shortcut keymap="$default"
-                                   first-keystroke="shift alt T" />
+                                   first-keystroke="alt T" />
             </action>
+            <action id="osmedile.intellij.pasteall.PasteAllWithTemplateReverseAction"
+                    class="osmedile.intellij.pasteall.PasteAllWithTemplateReverseAction"
+                    text="Paste all clipboard with template (recent first) " />
+
 
             <action id="osmedile.intellij.pasteall.MarkAction"
                     class="osmedile.intellij.pasteall.MarkAction"
@@ -70,7 +106,6 @@
                     text="Cancel mark">
             </action>
         </group>
-
 
     </actions>
 </idea-plugin>
