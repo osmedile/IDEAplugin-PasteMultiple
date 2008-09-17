@@ -470,7 +470,8 @@ public class ChooseContentUI extends JDialog {
             String value = PasteUtils.getValue(tran);
             if (StringUtil.isNotEmpty(value)) {
                 if (!StringUtil.isEmptyOrSpaces(filter.getText())) {
-                    if (value.contains(filter.getText())) {
+                    if (StringUtil
+                            .containsIgnoreCase(value, filter.getText())) {
                         shortened.add(value);
                     }
                 } else {

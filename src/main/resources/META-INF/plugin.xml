@@ -1,10 +1,10 @@
 <!DOCTYPE idea-plugin PUBLIC "Plugin/DTD"
         "http://plugins.intellij.net/plugin.dtd">
 <idea-plugin url="http://code.google.com/p/idea-pasteall/">
-    <name>Paste-Multiple</name>
+    <name>Paste Multiple</name>
     <description>
         <![CDATA[
-       <h2>Paste multiple contents from clipboard at once</h2>
+       <h2>Paste multiple contents at once</h2>
        <p>
        Enhance the default paste from history action. By allowing you to select
        multiple content and paste all of them at once.<br /><br />
@@ -15,7 +15,7 @@
             <li>Choose in which order you want to paste (older first or recent first)</li>
             <li>Optionnaly, apply a live template to pasted items</li>
        </ul>
-       <span style="font-weight: bolder; font-style: italic; color: red;">
+       <span style="font-weight: bolder; font-style: italic; color: gray;">
             Warning: only $SELECTION$ variable of Live templates is evaluated
        </span>
        <br />
@@ -30,7 +30,7 @@
         <li>Paste all the clipboard and apply a live template before pasting (older items first)</li>
         <li>Paste all the clipboard and apply a live template before pasting (recent items first)</li>
        </ul>
-       <span style="font-weight: bolder; font-style: italic; color: red;">
+       <span style="font-weight: bolder; font-style: italic; color: gray;">
            Warning: that only $SELECTION$ variable of Live templates is evaluated
        </span>
        <br />
