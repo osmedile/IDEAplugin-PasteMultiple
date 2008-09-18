@@ -1,0 +1,111 @@
+<!DOCTYPE idea-plugin PUBLIC "Plugin/DTD"
+        "http://plugins.intellij.net/plugin.dtd">
+<idea-plugin url="http://code.google.com/p/idea-pasteall/">
+    <name>Paste Multiple</name>
+    <description>
+        <![CDATA[
+       <h2>Paste multiple contents at once</h2>
+       <p>
+       Enhance the default paste from history action. By allowing you to select
+       multiple content and paste all of them at once.<br /><br />
+
+       Features:
+       <ul>
+            <li>Filter you clipboard, to quickly find what to paste</li>
+            <li>Choose in which order you want to paste (older first or recent first)</li>
+            <li>Optionnaly, apply a live template to pasted items</li>
+       </ul>
+       <span style="font-weight: bolder; font-style: italic; color: gray;">
+            Warning: only $SELECTION$ variable of Live templates is evaluated
+       </span>
+       <br />
+       This action is available under Edit Menu, or via the shortcut "alt shift V".
+       </p>
+
+       <p>
+       <h4>Other actions</h4>
+       <ul>
+        <li>Paste all the clipboard (older items first)</li>
+        <li>Paste all the clipboard (recent items first)</li>
+        <li>Paste all the clipboard and apply a live template before pasting (older items first)</li>
+        <li>Paste all the clipboard and apply a live template before pasting (recent items first)</li>
+       </ul>
+       <span style="font-weight: bolder; font-style: italic; color: gray;">
+           Warning: that only $SELECTION$ variable of Live templates is evaluated
+       </span>
+       <br />
+        All actions are available under Edit menu -> "Paste multiple".
+       </p>
+
+        <p>
+        <h4>Advanced actions: Mark</h4>
+            If you don't want to paste all the clipboard with the previous actions,
+            you can use mark actions.
+            When you set the mark, only contents copied after that will be pasted.
+            This apply to all actions.<br />
+            <br />
+            Mark actions are available under Edit menu -> "Paste multiple".
+        </p>
+
+       ]]>
+    </description>
+    <!--<change-notes>-->
+    <!--<![CDATA[-->
+
+    <!--]]>-->
+    <!--</change-notes>-->
+    <application-components>
+        <component>
+            <implementation-class>osmedile.intellij.pasteall.InitPasteAll</implementation-class>
+        </component>
+    </application-components>
+    <version>1.0</version>
+    <vendor email="osmedile@gmail.com">Olivier Smedile</vendor>
+    <idea-version since-build="7361" />
+    <actions>
+        <action id="osmedile.intellij.pasteall.ChoosePasteAllAction"
+                class="osmedile.intellij.pasteall.ChoosePasteAllAction"
+                text="Paste multiple ...">
+            <add-to-group group-id="EditMenu" anchor="last" />
+            <keyboard-shortcut keymap="$default"
+                               first-keystroke="alt shift V" />
+        </action>
+
+
+        <group id="osmedile.pasteall" text="Paste multiple (advanced)"
+               popup="true">
+            <add-to-group group-id="EditMenu" anchor="last" />
+
+            <action id="osmedile.intellij.pasteall.PasteAllAction"
+                    class="osmedile.intellij.pasteall.PasteAllAction"
+                    text="Paste all clipboard">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt V" />
+            </action>
+            <action id="osmedile.intellij.pasteall.PasteAllReverseAction"
+                    class="osmedile.intellij.pasteall.PasteAllReverseAction"
+                    text="Paste all clipboard (recent first)">
+            </action>
+
+            <action id="osmedile.intellij.pasteall.PasteAllWithTemplateAction"
+                    class="osmedile.intellij.pasteall.PasteAllWithTemplateAction"
+                    text="Paste all clipboard with template">
+                <keyboard-shortcut keymap="$default"
+                                   first-keystroke="alt T" />
+            </action>
+            <action id="osmedile.intellij.pasteall.PasteAllWithTemplateReverseAction"
+                    class="osmedile.intellij.pasteall.PasteAllWithTemplateReverseAction"
+                    text="Paste all clipboard with template (recent first) " />
+
+
+            <action id="osmedile.intellij.pasteall.MarkAction"
+                    class="osmedile.intellij.pasteall.MarkAction"
+                    text="Set mark (only items copied from now will be pasted)">
+            </action>
+            <action id="osmedile.intellij.pasteall.CancelMarkAction"
+                    class="osmedile.intellij.pasteall.CancelMarkAction"
+                    text="Cancel mark">
+            </action>
+        </group>
+
+    </actions>
+</idea-plugin>
