@@ -18,26 +18,39 @@ import java.awt.event.MouseListener;
 import java.util.List;
 
 /**
+ * Show a popup to select a template. List of templates is taken from "Live templates" marked as
+ * "surround templates" (usage of $SELECTION$ variable).
+ *
+ * Paste all items (limited by the mark) with older items first and apply the selected template.
+ *
  * @author Olivier Smedile
  * @version $Id$
  */
 public class PasteAllWithTemplateAction extends AnAction {
 
     private List<TemplateImpl> templates;
-    private JList list;
+
+    /**
+     * JList of templates
+     */
+    private JList templateList;
+
+    /**
+     * Popup to select a template from the JList
+     */
     private PopupChooserBuilder popup;
+
     private Editor editor;
 
     public PasteAllWithTemplateAction() {
         templates = TemplateUtils.getSelectionTemplates();
-        list = new JList(ChooseContentUI.getTemplateDesc(templates));
-        popup = JBPopupFactory.getInstance().createListPopupBuilder(list);
+        templateList = new JList(ChooseContentUI.getTemplateDesc(templates));
+        popup = JBPopupFactory.getInstance().createListPopupBuilder(templateList);
 
         popup.setTitle("Paste with template");
         popup.setItemChoosenCallback(new Runnable() {
             public void run() {
-                CommandProcessor.getInstance().executeCommand(
-                        editor.getProject(), new Runnable() {
+                CommandProcessor.getInstance().executeCommand(editor.getProject(), new Runnable() {
                     public void run() {
                         pasteItIDEA();
                     }
@@ -56,9 +69,9 @@ public class PasteAllWithTemplateAction extends AnAction {
 
         //remove all listeners, otherwise they will be registered once again
         // every time the action is called
-        final MouseListener[] listeners = list.getMouseListeners();
+        final MouseListener[] listeners = templateList.getMouseListeners();
         for (MouseListener listener : listeners) {
-            list.removeMouseListener(listener);
+            templateList.removeMouseListener(listener);
         }
 
         popup.createPopup().showCenteredInCurrentWindow(editor.getProject());
@@ -85,12 +98,10 @@ public class PasteAllWithTemplateAction extends AnAction {
     }
 
     private void pasteIt(Editor editor) {
-        TemplateImpl tpl = templates.get(list.getSelectedIndex());
+        TemplateImpl tpl = templates.get(templateList.getSelectedIndex());
 
-        PasteUtils.pasteAll(editor,
-                CopyPasteManager.getInstance().getAllContents(),
-                true, getOlderFirst(),
-                PasteAllAction.getNumberOfItems(), tpl.getString());
+        PasteUtils.pasteAll(editor, CopyPasteManager.getInstance().getAllContents(),
+                true, getOlderFirst(), PasteAllAction.getNumberOfItems(), tpl.getString());
     }
 
 // --------------------- GETTER / SETTER METHODS ---------------------

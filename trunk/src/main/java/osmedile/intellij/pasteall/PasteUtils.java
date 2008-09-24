@@ -9,6 +9,7 @@ import com.intellij.openapi.util.text.LineTokenizer;
 import com.intellij.openapi.util.text.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -22,28 +23,21 @@ import java.util.List;
  * @version $Id$
  */
 public class PasteUtils {
-//
-//    @NotNull
-//    public static String getValue(Transferable tran) {
-//        DataFlavor flavor;
-//        flavor = DataFlavor.stringFlavor;
-//        if (tran.isDataFlavorSupported(flavor)) {
-//            try {
-//                return tran.getTransferData(flavor).toString();
-//            } catch (UnsupportedFlavorException e) {
-//                return "";
-//            } catch (IOException e) {
-//                return "";
-//            }
-//        } else {
-//            return "";
-//        }
-//    }
-
-    //
-
+    /**
+     * Return a String value of the specified transferable.
+     * If the value of transferable can't be converted to a String, then an empty string is
+     * returned.
+     *
+     * Method adapted from EditorModificationUtil to catch all exceptions related to transferable.
+     *
+     * @param tran transferable to be converted to a String
+     *
+     * @return a String value of the specified transferable or empty string if an error occurs.
+     *
+     * @see com.intellij.openapi.editor.EditorModificationUtil#getStringContent(java.awt.datatransfer.Transferable)
+     */
     @NotNull
-    public static String getValue(Transferable tran) {
+    public static String getValue(@Nullable Transferable tran) {
         if (tran == null) {
             return "";
         }
@@ -76,9 +70,49 @@ public class PasteUtils {
         }
     }
 
+    /**
+     * Paste transferables into the editor at caret.
+     * Number of items to be pasted are limited by the value of limit.
+     *
+     * @param editor
+     * @param trans      list of items to pasted. Recent items are first in transferable array.
+     * @param newLine    true if a newline character is added between each item pasted
+     * @param olderFirst true if older items (Transferable) must be pasted first.
+     * @param limit      number of items to be pasted
+     * @param template   template to used before pasting items
+     */
+    public static void pasteAll(@NotNull Editor editor, @NotNull Transferable[] trans,
+                                boolean newLine,
+                                boolean olderFirst, int limit,
+                                @Nullable String template) {
 
-    public static StringBuilder getContent(boolean newLine, boolean olderFirst,
-                                           String[] values, String template) {
+        //Recent items are first in transferable array
+
+        List<String> values = new ArrayList<String>();
+        for (int i = 0;
+             i < trans.length && (limit < 0 || values.size() < limit); i++) {
+            Transferable tran = trans[i];
+            String s = getValue(tran);
+            if (StringUtil.isNotEmpty(s)) {
+                values.add(s);
+            }
+        }
+
+        pasteAll(editor, newLine, olderFirst,
+                values.toArray(new String[values.size()]), template);
+    }
+
+    /**
+     * @param editor
+     * @param values     list of items to pasted. Recent items are first in array.
+     * @param newLine    true if a newline character is added between each item pasted
+     * @param olderFirst true if older items (Transferable) must be pasted first.
+     * @param template   template to used before pasting items
+     */
+    public static void pasteAll(@NotNull Editor editor, boolean newLine,
+                                boolean olderFirst, @NotNull String[] values,
+                                @Nullable String template) {
+
         StringBuilder sb = new StringBuilder();
 
         if (olderFirst) {
@@ -98,35 +132,6 @@ public class PasteUtils {
             sb.deleteCharAt(sb.length() - 1);
         }
 
-        return sb;
-    }
-
-    public static void pasteAll(Editor editor, Transferable[] trans,
-                                boolean newLine,
-                                boolean olderFirst, int limit,
-                                String template) {
-
-        //Recent items are first in transferable array
-
-        List<String> values = new ArrayList<String>();
-        for (int i = 0;
-             i < trans.length && (limit < 0 || values.size() < limit); i++) {
-            Transferable tran = trans[i];
-            String s = getValue(tran);
-            if (StringUtil.isNotEmpty(s)) {
-                values.add(s);
-            }
-        }
-
-        pasteAll(editor, newLine, olderFirst,
-                values.toArray(new String[values.size()]), template);
-    }
-
-    public static void pasteAll(Editor editor, boolean newLine,
-                                boolean olderFirst, String[] values,
-                                String template) {
-
-        StringBuilder sb = getContent(newLine, olderFirst, values, template);
         if (editor.isColumnMode()) {
             insertStringAsBlock(editor, sb.toString());
         } else {
@@ -135,10 +140,20 @@ public class PasteUtils {
     }
 
 
-    public static void insertStringAsBlock(Editor editor,
-                                           String content) {
+    /**
+     * Insert the specified string at caret.
+     * Method copied from EditorModificationUtil#pasteFromClipboardAsBlock() and adapted to paste
+     * the specified content
+     *
+     * @param editor
+     * @param content string to insert in editor at caret.
+     *
+     * @see EditorModificationUtil#pasteFromClipboardAsBlock(com.intellij.openapi.editor.Editor)
+     */
+    public static void insertStringAsBlock(@Nullable Editor editor,
+                                           @Nullable String content) {
 
-        if (content != null) {
+        if (editor != null && content != null) {
             try {
                 int caretLine =
                         editor.getCaretModel().getLogicalPosition().line;
@@ -200,7 +215,16 @@ public class PasteUtils {
     }
 
 
-    public static void zeroWidthBlockSelectionAtCaretColumn(final Editor editor,
+    /**
+     * Method copied from EditorModificationUtil because it's private.
+     *
+     * @param editor
+     * @param startLine
+     * @param endLine
+     *
+     * @see com.intellij.openapi.editor.EditorModificationUtil#zeroWidthBlockSelectionAtCaretColumn(com.intellij.openapi.editor.Editor, int, int)
+     */
+    public static void zeroWidthBlockSelectionAtCaretColumn(@NotNull final Editor editor,
                                                             final int startLine,
                                                             final int endLine) {
         int caretColumn = editor.getCaretModel().getLogicalPosition().column;

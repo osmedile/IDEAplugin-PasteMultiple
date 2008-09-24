@@ -1,6 +1,8 @@
 package osmedile.intellij.pasteall;
 
 /**
+ * Paste all items (limited by the mark) with recent items first.
+ *
  * @author Olivier Smedile
  * @version $Id$
  */
