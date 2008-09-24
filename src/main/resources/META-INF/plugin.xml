@@ -49,11 +49,37 @@
 
        ]]>
     </description>
-    <!--<change-notes>-->
-    <!--<![CDATA[-->
-
-    <!--]]>-->
-    <!--</change-notes>-->
+    <change-notes>
+        <![CDATA[
+    <h3>Version 1.1</h1>
+    <p>
+    Changes in paste dialog:
+    <ul>
+        <li>Focus list of items by default</li>
+        <li>"Use template is automatically selected when selecting or modifying a template</li>
+        <!--<li>Background indicator (color?) to show if template is activated</li>-->
+    </ul>    
+    </p>
+    <h3>Version 1.0</h1>
+    <p>
+        Paste multiple dialog with:
+    <ul>
+       <li>Filter you clipboard, to quickly find what to paste</li>
+       <li>Choose in which order you want to paste (older first or recent first)</li>
+       <li>Optionnaly, apply a live template to pasted items</li>
+    </ul>
+    Others actions implemented:
+    <ul>
+        <li>Paste all the clipboard (older items first)</li>
+        <li>Paste all the clipboard (recent items first)</li>
+        <li>Paste all the clipboard and apply a live template before pasting (older items first)</li>
+        <li>Paste all the clipboard and apply a live template before pasting (recent items first)</li>
+        <li>Set mark</li>
+        <li>Cancel mark</li>
+    </ul>
+    </p>
+                ]]>
+    </change-notes>
     <application-components>
         <component>
             <implementation-class>osmedile.intellij.pasteall.InitPasteAll</implementation-class>
