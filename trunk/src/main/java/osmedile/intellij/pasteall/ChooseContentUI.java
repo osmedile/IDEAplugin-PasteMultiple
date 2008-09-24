@@ -5,6 +5,8 @@ import com.intellij.codeInsight.template.impl.TemplateImpl;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
@@ -23,24 +25,57 @@ import java.util.List;
 
 public class ChooseContentUI extends JDialog {
     private JPanel contentPane;
+
+    /**
+     * Paste button
+     */
     private JButton pasteBt;
-    private JButton buttonCancel;
+
+    /**
+     *
+     */
+    private JButton cancelButton;
+
+    /**
+     * List of items that can be pasted
+     */
     private JList transList;
+
     private JRadioButton recentFirst;
     private JRadioButton olderFirst;
     private JSplitPane splitPane;
+
+    /**
+     * Filter the list of items
+     */
     private JTextField filter;
-    private Editor myViewer;
+
+    /**
+     * Preview of the selected item
+     */
+    private Editor selectedItemViewer;
 
     private Project project;
     private Editor editor;
 
     private ArrayList<String> shortened;
+
+
     private ChooseContentUI.MyListModel model;
 
+    /**
+     * Used to select a template
+     */
     private JComboBox templateBox;
+
+    /**
+     *
+     */
     private JPanel templatePanel;
 
+    /**
+     * Editor to preview and edit selected template.
+     */
     private Editor templateViewer;
 
     /**
@@ -52,6 +87,10 @@ public class ChooseContentUI extends JDialog {
             IconLoader.getIcon("/fileTypes/text.png");
 
     private List<TemplateImpl> templateList;
+
+    /**
+     * True if template is used when pasting.
+     */
     private JCheckBox useTemplatChk;
 
     public JCheckBox getUseTemplatChk() {
@@ -228,15 +267,15 @@ public class ChooseContentUI extends JDialog {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel5.add(pasteBt, gbc);
-        buttonCancel = new JButton();
-        buttonCancel.setText("Cancel");
+        cancelButton = new JButton();
+        cancelButton.setText("Cancel");
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel5.add(buttonCancel, gbc);
+        panel5.add(cancelButton, gbc);
         ButtonGroup buttonGroup;
         buttonGroup = new ButtonGroup();
         buttonGroup.add(olderFirst);
@@ -260,7 +299,6 @@ public class ChooseContentUI extends JDialog {
                 append(String.valueOf((index + 1) % 10) + "  ",
                         SimpleTextAttributes.GRAYED_ATTRIBUTES);
             }
-//            append((String) value, SimpleTextAttributes.REGULAR_ATTRIBUTES);
             String s = (String) value;
             int newLineIdx = s.indexOf('\n');
             if (newLineIdx == -1) {
@@ -284,7 +322,7 @@ public class ChooseContentUI extends JDialog {
             }
         });
 
-        buttonCancel.addActionListener(new ActionListener() {
+        cancelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCancel();
             }
@@ -420,6 +458,27 @@ public class ChooseContentUI extends JDialog {
                 }
             }
         });
+
+        templateViewer.getDocument().addDocumentListener(new DocumentListener() {
+            public void beforeDocumentChange(DocumentEvent event) {
+            }
+
+            public void documentChanged(DocumentEvent event) {
+                if (!StringUtil.isEmpty(event.getNewFragment().toString()) &&
+                        !useTemplatChk.isSelected()) {
+                    useTemplatChk.setSelected(true);
+                }
+            }
+        });
+
+        //rebuild list of transferable every time a new transferable is apsted
+//        CopyPasteManager.getInstance()
+//                .addContentChangedListener(new CopyPasteManager.ContentChangedListener() {
+//                    public void contentChanged(Transferable oldTransferable,
+//                                               Transferable newTransferable) {
+//                        rebuildListContent();
+//                    }
+//                });
     }
 
     private int selectedTplIdx = -1;
@@ -431,12 +490,20 @@ public class ChooseContentUI extends JDialog {
         this.editor = editor;
     }
 
+    public JList getTransList() {
+        return transList;
+    }
+
     public class MyListModel extends AbstractListModel {
         public int getSize() {
             return shortened.size();
         }
 
         public Object getElementAt(int idx) {
+            //This can happen if shortened is updated
+            if (idx >= shortened.size()) {
+                return "";
+            }
             return shortened.get(idx);
         }
 
@@ -470,8 +537,7 @@ public class ChooseContentUI extends JDialog {
             String value = PasteUtils.getValue(tran);
             if (StringUtil.isNotEmpty(value)) {
                 if (!StringUtil.isEmptyOrSpaces(filter.getText())) {
-                    if (StringUtil
-                            .containsIgnoreCase(value, filter.getText())) {
+                    if (StringUtil.containsIgnoreCase(value, filter.getText())) {
                         shortened.add(value);
                     }
                 } else {
@@ -480,21 +546,14 @@ public class ChooseContentUI extends JDialog {
             }
         }
 
-//        for (int i = 0; i < shortened.size(); i++) {
-//            String content = shortened.get(i);
-//            String fullString = content;
-//            fullString = StringUtil.convertLineSeparators(fullString, "\n");
-//            int newLineIdx = fullString.indexOf('\n');
-//            if (newLineIdx == -1) {
-//                shortened.set(i, fullString.trim());
-//            } else {
-//            }
-//        }
-
         model.fireChanges();
 
         //remove selection
-        transList.setSelectedIndex(-1);
+        if (shortened.size() > 0) {
+            transList.setSelectedIndex(0);
+        } else {
+            transList.setSelectedIndex(-1);
+        }
         updateViewerForSelection();
     }
 
@@ -506,8 +565,7 @@ public class ChooseContentUI extends JDialog {
             template = null;
         }
 
-        PasteUtils.pasteAll(editor, true, olderFirst.isSelected(),
-                getSelectedValues(), template);
+        PasteUtils.pasteAll(editor, true, olderFirst.isSelected(), getSelectedValues(), template);
 
         dispose();
     }
@@ -523,9 +581,9 @@ public class ChooseContentUI extends JDialog {
     @Override
     public void dispose() {
         super.dispose();
-        if (myViewer != null) {
-            EditorFactory.getInstance().releaseEditor(myViewer);
-            myViewer = null;
+        if (selectedItemViewer != null) {
+            EditorFactory.getInstance().releaseEditor(selectedItemViewer);
+            selectedItemViewer = null;
         }
     }
 
@@ -541,22 +599,19 @@ public class ChooseContentUI extends JDialog {
         }
         String fullString = (String) transList.getSelectedValue();
         fullString = StringUtil.convertLineSeparators(fullString);
-        if (myViewer != null) {
-            EditorFactory.getInstance().releaseEditor(myViewer);
+        if (selectedItemViewer != null) {
+            EditorFactory.getInstance().releaseEditor(selectedItemViewer);
         }
 
-        Document doc =
-                EditorFactory.getInstance().createDocument(fullString);
-        myViewer = EditorFactory.getInstance().createViewer(doc, project);
-        myViewer.getComponent().setPreferredSize(new Dimension(300, 300));
-        myViewer.getSettings().setFoldingOutlineShown(false);
-        myViewer.getSettings().setLineNumbersShown(true);
-        myViewer.getSettings().setLineMarkerAreaShown(false);
-        splitPane.setRightComponent(myViewer.getComponent());
+        Document doc = EditorFactory.getInstance().createDocument(fullString);
+        selectedItemViewer = EditorFactory.getInstance().createViewer(doc, project);
+        selectedItemViewer.getComponent().setPreferredSize(new Dimension(300, 300));
+        selectedItemViewer.getSettings().setFoldingOutlineShown(false);
+        selectedItemViewer.getSettings().setLineNumbersShown(true);
+        selectedItemViewer.getSettings().setLineMarkerAreaShown(false);
+        splitPane.setRightComponent(selectedItemViewer.getComponent());
         splitPane.setDividerLocation(0.6);
 
         splitPane.revalidate();
     }
-
-
 }
