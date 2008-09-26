@@ -57,7 +57,7 @@
     <ul>
         <li>Focus list of items by default</li>
         <li>"Use template is automatically selected when selecting or modifying a template</li>
-        <!--<li>Background indicator (color?) to show if template is activated</li>-->
+        <li>No new line is added if a template already ends with an empty line</li>
     </ul>    
     </p>
     <h3>Version 1.0</h1>
