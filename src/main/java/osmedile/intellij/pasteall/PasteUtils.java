@@ -124,7 +124,7 @@ public class PasteUtils {
             } else {
                 sb.append(value);
             }
-            if (newLine && !template.endsWith("\n")) {
+            if (newLine && (template == null || !template.endsWith("\n"))) {
                 sb.append("\n");
             }
         }
