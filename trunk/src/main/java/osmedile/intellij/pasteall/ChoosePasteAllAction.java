@@ -54,14 +54,15 @@ public class ChoosePasteAllAction extends EditorAction {
 
                 chooseContentUI.pack();
                 chooseContentUI.setLocationByPlatform(true);
-                chooseContentUI.getTransList().requestFocus();
-                chooseContentUI.getTransList().requestFocusInWindow();
+                chooseContentUI.getPasteableList().requestFocus();
+                chooseContentUI.getPasteableList().requestFocusInWindow();
                 chooseContentUI.setVisible(true);
 
                 //save dialog configuration
                 useTemplate = chooseContentUI.getUseTemplatChk().isSelected();
                 tplIdx = chooseContentUI.getTemplateBox().getSelectedIndex();
-                template = chooseContentUI.getTemplateViewer().getDocument().getText();
+                //TODO get template correctly
+//                template = chooseContentUI.getTemplateViewer().getDocument().getText();
                 olderFirst = chooseContentUI.getOlderFirst().isSelected();
 
             }
