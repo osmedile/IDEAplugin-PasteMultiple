@@ -18,8 +18,7 @@ public class InitPasteAll implements ApplicationComponent {
     public void initComponent() {
         CopyPasteManager.getInstance().addContentChangedListener(
                 new CopyPasteManager.ContentChangedListener() {
-                    public void contentChanged(Transferable oldCopied,
-                                               Transferable newCopied) {
+                    public void contentChanged(Transferable oldCopied, Transferable newCopied) {
 
                         String oldVal = PasteUtils.getValue(oldCopied);
                         String s = PasteUtils.getValue(newCopied);
@@ -28,21 +27,15 @@ public class InitPasteAll implements ApplicationComponent {
                             return;
                         }
 
-
-                        if (StringUtil.isNotEmpty(s) &&
-                                PasteAllAction.getNumberOfItems() != -1) {
+                        if (StringUtil.isNotEmpty(s) && PasteAllAction.getNumberOfItems() != -1) {
                             boolean alreadyExist = false;
                             //search if s is already in the applicable transferable
 
-                            Transferable[] trans =
-                                    CopyPasteManager.getInstance()
-                                            .getAllContents();
-
+                            Transferable[] trans = CopyPasteManager.getInstance().getAllContents();
 
                             int itemChecked = 0;
                             for (int i = 1; i < trans.length &&
-                                    itemChecked <
-                                            PasteAllAction.getNumberOfItems();
+                                    itemChecked < PasteAllAction.getNumberOfItems();
                                  i++) {
                                 String value = PasteUtils.getValue(trans[i]);
                                 if (StringUtil.isNotEmpty(value)) {
@@ -61,10 +54,7 @@ public class InitPasteAll implements ApplicationComponent {
                                 //CopyPasteManager.getInstance().getAllContents()
                                 //Do not touch number of items to paste
                             }
-
-
                         }
-                        //PasteUtils.getValue(newCopied);
                     }
                 });
 
