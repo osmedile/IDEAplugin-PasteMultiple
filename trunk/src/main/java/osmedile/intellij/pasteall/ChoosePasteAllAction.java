@@ -16,17 +16,17 @@ public class ChoosePasteAllAction extends EditorAction {
     /**
      * Used to remember "use template" checkbox status.
      */
-    private boolean useTemplate = false;
+    private boolean useTemplate;
 
     /**
      * Used to remember the selected template in Combo box of available templates.
      */
-    private int tplIdx = 0;
+    private int tplIdx;
 
     /**
      * Used to remember the template.
      */
-    private String template = "";
+    private String template = null;
 
     /**
      * Used to remember if items are pasted with older first.
@@ -41,32 +41,46 @@ public class ChoosePasteAllAction extends EditorAction {
 
                 //reapply saved configuration of dialog
                 ChooseContentUI chooseContentUI =
-                        new ChooseContentUI(editor.getProject(), editor);
-                chooseContentUI.getUseTemplatChk().setSelected(useTemplate);
-                chooseContentUI.getTemplateBox().setSelectedIndex(tplIdx);
-                chooseContentUI.getTemplateViewer().getDocument().setText(template);
-                if (olderFirst) {
-                    chooseContentUI.getOlderFirst().setSelected(true);
-                } else {
-                    chooseContentUI.getRecentFirst().setSelected(true);
-                }
+                        new ChooseContentUI(editor.getProject(), editor, ChoosePasteAllAction.this);
 
 
                 chooseContentUI.pack();
                 chooseContentUI.setLocationByPlatform(true);
-                chooseContentUI.getPasteableList().requestFocus();
-                chooseContentUI.getPasteableList().requestFocusInWindow();
                 chooseContentUI.setVisible(true);
-
-                //save dialog configuration
-                useTemplate = chooseContentUI.getUseTemplatChk().isSelected();
-                tplIdx = chooseContentUI.getTemplateBox().getSelectedIndex();
-                //TODO get template correctly
-//                template = chooseContentUI.getTemplateViewer().getDocument().getText();
-                olderFirst = chooseContentUI.getOlderFirst().isSelected();
-
             }
         });
     }
 
+
+    public boolean getUseTemplate() {
+        return useTemplate;
+    }
+
+    public void setUseTemplate(boolean useTemplate) {
+        this.useTemplate = useTemplate;
+    }
+
+    public int getTplIdx() {
+        return tplIdx;
+    }
+
+    public void setTplIdx(int tplIdx) {
+        this.tplIdx = tplIdx;
+    }
+
+    public String getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(String template) {
+        this.template = template;
+    }
+
+    public boolean isOlderFirst() {
+        return olderFirst;
+    }
+
+    public void setOlderFirst(boolean olderFirst) {
+        this.olderFirst = olderFirst;
+    }
 }

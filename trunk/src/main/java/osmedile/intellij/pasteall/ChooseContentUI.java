@@ -32,7 +32,6 @@ import java.util.List;
 public class ChooseContentUI extends JDialog {
     private static final Icon TEXT_ICON = IconLoader.getIcon("/fileTypes/text.png");
 
-    
 
     private JPanel contentPane;
 
@@ -97,6 +96,218 @@ public class ChooseContentUI extends JDialog {
      * True if template is used when pasting.
      */
     private JCheckBox useTemplatChk;
+    private ChoosePasteAllAction callback;
+
+// -------------------------- INNER CLASSES --------------------------
+
+    /**
+     * Filter value of pasterable items.
+     * Cut text if there is more than 1 line and add "..."
+     */
+    private static class PasteableListCellRenderer extends ColoredListCellRenderer {
+        protected void customizeCellRenderer(JList list, Object value,
+                                             int index, boolean selected,
+                                             boolean hasFocus) {
+            setIcon(TEXT_ICON);
+            if (index <= 9) {
+                append(String.valueOf((index + 1) % 10) + "  ",
+                        SimpleTextAttributes.GRAYED_ATTRIBUTES);
+            }
+            String s = (String) value;
+            int newLineIdx = s.indexOf('\n');
+            if (newLineIdx == -1) {
+                append(s.trim(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+            } else {
+                append(s.substring(0, newLineIdx).trim() + " ...",
+                        SimpleTextAttributes.REGULAR_ATTRIBUTES);
+            }
+        }
+    }
+
+    public class MyListModel extends AbstractListModel {
+        public int getSize() {
+            return pasteables.size();
+        }
+
+        public Object getElementAt(int idx) {
+            //This can happen if pasteables is updated
+            if (idx >= pasteables.size()) {
+                return "";
+            }
+            return pasteables.get(idx);
+        }
+
+        public void fireChanges() {
+            fireContentsChanged(pasteables, 0, pasteables.size());
+        }
+    }
+
+// --------------------------- CONSTRUCTORS ---------------------------
+
+    public ChooseContentUI() {
+        $$$setupUI$$$();
+        setContentPane(contentPane);
+        setModal(true);
+        getRootPane().setDefaultButton(pasteBt);
+
+        pasteBt.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onOK();
+            }
+        });
+
+        ActionListener cancelListener = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onCancel();
+            }
+        };
+
+        cancelButton.addActionListener(cancelListener);
+
+        // call onCancel() when cross is clicked
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                onCancel();
+            }
+        });
+
+        // call onCancel() on ESCAPE
+        contentPane.registerKeyboardAction(cancelListener,
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        //More specific
+        pasteables = new ArrayList<String>();
+        pasteableFilter.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                rebuildListContent();
+            }
+        });
+
+        model = new MyListModel();
+        pasteableList.setModel(model);
+
+
+        pasteableList.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.isConsumed() || e.getClickCount() != 2 || e.isPopupTrigger()) {
+                    return;
+                }
+                onOK();
+            }
+        });
+        pasteableList.addKeyListener(new KeyAdapter() {
+            public void keyReleased(KeyEvent e) {
+//                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+//                    int selectedIndex = pasteableList.getSelectedIndex();
+//                    int size = pasteables.size();
+//                    removeContentAt(pasteables.get(selectedIndex));
+//                    rebuildListContent();
+//                    if (size == 1) {
+//                        onCancel();
+//                        return;
+//                    }
+//                    pasteableList.setSelectedIndex(Math.min(selectedIndex, pasteables.size() - 1));
+//                } else
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    onOK();
+                } else {
+                    final char aChar = e.getKeyChar();
+                    if (aChar >= '0' && aChar <= '9') {
+                        int idx = aChar == '0' ? 9 : aChar - '1';
+                        if (idx < pasteables.size()) {
+                            pasteableList.setSelectedIndex(idx);
+                        }
+                    }
+                }
+            }
+        });
+
+        pasteableList.setCellRenderer(new PasteableListCellRenderer());
+        pasteableList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                updateViewerForSelection();
+                if (pasteableList.getSelectedIndices().length > 0) {
+                    pasteBt.setEnabled(true);
+                } else {
+                    pasteBt.setEnabled(false);
+                }
+            }
+        }
+        );
+
+        //Viewer
+        selectedItemViewer = EditorFactory.getInstance().createViewer(
+                EditorFactory.getInstance().createDocument(""), project);
+        selectedItemViewer.getComponent().setPreferredSize(new Dimension(300, 150));
+        selectedItemViewer.getSettings().setFoldingOutlineShown(false);
+        selectedItemViewer.getSettings().setLineNumbersShown(true);
+        selectedItemViewer.getSettings().setLineMarkerAreaShown(false);
+
+        splitPane.setRightComponent(selectedItemViewer.getComponent());
+        splitPane.setDividerLocation(0.8);
+        splitPane.revalidate();
+
+        //templates
+        templateViewer = EditorFactory.getInstance().createEditor(
+                EditorFactory.getInstance().createDocument(""), project);
+        templateViewer.getComponent().setPreferredSize(new Dimension(300, 300));
+        templateViewer.getSettings().setFoldingOutlineShown(false);
+        templateViewer.getSettings().setLineNumbersShown(true);
+        templateViewer.getSettings().setLineMarkerAreaShown(false);
+
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.BOTH;
+        templatePanel.add(templateViewer.getComponent(), gbc);
+        ButtonGroup buttonGroup;
+        buttonGroup = new ButtonGroup();
+        buttonGroup.add(olderFirst);
+        buttonGroup.add(recentFirst);
+
+        templateBox.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                TemplateImpl template = templateList.get(templateBox.getSelectedIndex());
+                templateViewer.getDocument().setText(template.getString());
+                TemplateEditorUtil.setHighlighter(
+                        templateViewer, template.getTemplateContext());
+            }
+        });
+
+        if (templateList.size() > 0) {
+            templateBox.setSelectedIndex(0);
+            templateViewer.getDocument().setText(templateList.get(0).getString());
+            TemplateEditorUtil.setHighlighter(
+                    templateViewer, templateList.get(0).getTemplateContext());
+        }
+
+
+        templateBox.setBackground(Color.WHITE);
+
+        templateViewer.getDocument().addDocumentListener(new DocumentListener() {
+            public void beforeDocumentChange(DocumentEvent event) {
+            }
+
+            public void documentChanged(DocumentEvent event) {
+                if (!StringUtil.isEmpty(event.getNewFragment().toString()) &&
+                        !useTemplatChk.isSelected()) {
+                    useTemplatChk.setSelected(true);
+                }
+            }
+        });
+
+        rebuildListContent();
+
+        pasteableList.requestFocus();
+        pasteableList.requestFocusInWindow();
+    }
 
     /**
      * Method generated by IntelliJ IDEA GUI Designer
@@ -268,217 +479,6 @@ public class ChooseContentUI extends JDialog {
         buttonGroup.add(recentFirst);
     }
 
-    /**
-     * @noinspection ALL
-     */
-    public JComponent $$$getRootComponent$$$() {
-        return contentPane;
-    }
-
-    /**
-     * Filter value of pasterable items.
-     * Cut text if there is more than 1 line and add "..."
-     */
-    private static class PasteableListCellRenderer extends ColoredListCellRenderer {
-        protected void customizeCellRenderer(JList list, Object value,
-                                             int index, boolean selected,
-                                             boolean hasFocus) {
-            setIcon(TEXT_ICON);
-            if (index <= 9) {
-                append(String.valueOf((index + 1) % 10) + "  ",
-                        SimpleTextAttributes.GRAYED_ATTRIBUTES);
-            }
-            String s = (String) value;
-            int newLineIdx = s.indexOf('\n');
-            if (newLineIdx == -1) {
-                append(s.trim(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
-            } else {
-                append(s.substring(0, newLineIdx).trim() + " ...",
-                        SimpleTextAttributes.REGULAR_ATTRIBUTES);
-            }
-        }
-    }
-
-    public class MyListModel extends AbstractListModel {
-        public int getSize() {
-            return pasteables.size();
-        }
-
-        public Object getElementAt(int idx) {
-            //This can happen if pasteables is updated
-            if (idx >= pasteables.size()) {
-                return "";
-            }
-            return pasteables.get(idx);
-        }
-
-        public void fireChanges() {
-            fireContentsChanged(pasteables, 0, pasteables.size());
-        }
-    }
-
-    public ChooseContentUI() {
-        $$$setupUI$$$();
-        setContentPane(contentPane);
-        setModal(true);
-        getRootPane().setDefaultButton(pasteBt);
-
-        pasteBt.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
-
-        ActionListener cancelListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        };
-
-        cancelButton.addActionListener(cancelListener);
-
-        // call onCancel() when cross is clicked
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                onCancel();
-            }
-        });
-
-        // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(cancelListener,
-                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-
-        //More specific
-        pasteables = new ArrayList<String>();
-        pasteableFilter.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                rebuildListContent();
-            }
-        });
-
-        model = new MyListModel();
-        pasteableList.setModel(model);
-
-
-        pasteableList.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                if (e.isConsumed() || e.getClickCount() != 2 || e.isPopupTrigger()) {
-                    return;
-                }
-                onOK();
-            }
-        });
-        pasteableList.addKeyListener(new KeyAdapter() {
-            public void keyReleased(KeyEvent e) {
-//                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
-//                    int selectedIndex = pasteableList.getSelectedIndex();
-//                    int size = pasteables.size();
-//                    removeContentAt(pasteables.get(selectedIndex));
-//                    rebuildListContent();
-//                    if (size == 1) {
-//                        onCancel();
-//                        return;
-//                    }
-//                    pasteableList.setSelectedIndex(Math.min(selectedIndex, pasteables.size() - 1));
-//                } else
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    onOK();
-                } else {
-                    final char aChar = e.getKeyChar();
-                    if (aChar >= '0' && aChar <= '9') {
-                        int idx = aChar == '0' ? 9 : aChar - '1';
-                        if (idx < pasteables.size()) {
-                            pasteableList.setSelectedIndex(idx);
-                        }
-                    }
-                }
-            }
-        });
-
-        pasteableList.setCellRenderer(new PasteableListCellRenderer());
-        pasteableList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                updateViewerForSelection();
-                if (pasteableList.getSelectedIndices().length > 0) {
-                    pasteBt.setEnabled(true);
-                } else {
-                    pasteBt.setEnabled(false);
-                }
-            }
-        }
-        );
-
-        //Viewer
-        selectedItemViewer = EditorFactory.getInstance().createViewer(
-                EditorFactory.getInstance().createDocument(""), project);
-        selectedItemViewer.getComponent().setPreferredSize(new Dimension(300, 150));
-        selectedItemViewer.getSettings().setFoldingOutlineShown(false);
-        selectedItemViewer.getSettings().setLineNumbersShown(true);
-        selectedItemViewer.getSettings().setLineMarkerAreaShown(false);
-
-        splitPane.setRightComponent(selectedItemViewer.getComponent());
-        splitPane.setDividerLocation(0.8);
-        splitPane.revalidate();
-
-        //templates
-        templateViewer = EditorFactory.getInstance().createEditor(
-                EditorFactory.getInstance().createDocument(""), project);
-        templateViewer.getComponent().setPreferredSize(new Dimension(300, 300));
-        templateViewer.getSettings().setFoldingOutlineShown(false);
-        templateViewer.getSettings().setLineNumbersShown(true);
-        templateViewer.getSettings().setLineMarkerAreaShown(false);
-
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.BOTH;
-        templatePanel.add(templateViewer.getComponent(), gbc);
-        ButtonGroup buttonGroup;
-        buttonGroup = new ButtonGroup();
-        buttonGroup.add(olderFirst);
-        buttonGroup.add(recentFirst);
-
-        templateBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                TemplateImpl template = templateList.get(templateBox.getSelectedIndex());
-                templateViewer.getDocument().setText(template.getString());
-                TemplateEditorUtil.setHighlighter(
-                        templateViewer, template.getTemplateContext());
-            }
-        });
-
-        if (templateList.size() > 0) {
-            templateBox.setSelectedIndex(0);
-            templateViewer.getDocument().setText(templateList.get(0).getString());
-            TemplateEditorUtil.setHighlighter(
-                        templateViewer, templateList.get(0).getTemplateContext());
-        }
-
-
-        templateBox.setBackground(Color.WHITE);
-
-        templateViewer.getDocument().addDocumentListener(new DocumentListener() {
-            public void beforeDocumentChange(DocumentEvent event) {
-            }
-
-            public void documentChanged(DocumentEvent event) {
-                if (!StringUtil.isEmpty(event.getNewFragment().toString()) &&
-                        !useTemplatChk.isSelected()) {
-                    useTemplatChk.setSelected(true);
-                }
-            }
-        });
-
-        rebuildListContent();
-    }
-
     private void createUIComponents() {
         templateList = TemplateUtils.getSelectionTemplates();
         templateBox = new JComboBox(getTemplateDesc(templateList));
@@ -487,11 +487,67 @@ public class ChooseContentUI extends JDialog {
     public static String[] getTemplateDesc(List<TemplateImpl> templates) {
         String[] tplIds = new String[templates.size()];
         for (int i = 0; i < templates.size(); i++) {
-            tplIds[i] = templates.get(i).getKey() + " " +
-                    templates.get(i).getDescription();
+            tplIds[i] = templates.get(i).getKey() + " " + templates.get(i).getDescription();
         }
 
         return tplIds;
+    }
+
+    private void onCancel() {
+        dispose();
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (selectedItemViewer != null) {
+            EditorFactory.getInstance().releaseEditor(selectedItemViewer);
+            selectedItemViewer = null;
+        }
+        if (templateViewer != null) {
+            EditorFactory.getInstance().releaseEditor(templateViewer);
+            templateViewer = null;
+        }
+    }
+
+    private void onOK() {
+        final String template;
+        if (useTemplatChk.isSelected()) {
+            template = templateViewer.getDocument().getText();
+        } else {
+            template = null;
+        }
+
+        //save dialog configuration
+        callback.setTemplate(templateViewer.getDocument().getText());
+        callback.setTplIdx(templateBox.getSelectedIndex());
+        callback.setUseTemplate(useTemplatChk.isSelected());
+        callback.setOlderFirst(olderFirst.isSelected());
+
+
+        PasteUtils.pasteAll(editor, true, olderFirst.isSelected(), getSelectedValues(), template);
+
+        dispose();
+    }
+
+    public String[] getSelectedValues() {
+        final Object[] selected = pasteableList.getSelectedValues();
+        String[] selects = new String[selected.length];
+        //noinspection SuspiciousSystemArraycopy
+        System.arraycopy(selected, 0, selects, 0, selected.length);
+
+        return selects;
+    }
+
+    private void updateViewerForSelection() {
+        if (pasteableList.getSelectedValue() == null) {
+            selectedItemViewer.getDocument().setText("");
+            return;
+        }
+        String fullString = (String) pasteableList.getSelectedValue();
+        fullString = StringUtil.convertLineSeparators(fullString);
+
+        selectedItemViewer.getDocument().setText(fullString);
     }
 
     private void rebuildListContent() {
@@ -523,87 +579,35 @@ public class ChooseContentUI extends JDialog {
         updateViewerForSelection();
     }
 
-    private void onCancel() {
-        dispose();
-    }
-
-    private void onOK() {
-        final String template;
-        if (useTemplatChk.isSelected()) {
-            template = templateViewer.getDocument().getText();
-        } else {
-            template = null;
-        }
-
-        PasteUtils.pasteAll(editor, true, olderFirst.isSelected(), getSelectedValues(), template);
-
-        dispose();
-    }
-
-    public String[] getSelectedValues() {
-        final Object[] selected = pasteableList.getSelectedValues();
-        String[] selects = new String[selected.length];
-        System.arraycopy(selected, 0, selects, 0, selected.length);
-
-        return selects;
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-        if (selectedItemViewer != null) {
-            EditorFactory.getInstance().releaseEditor(selectedItemViewer);
-            selectedItemViewer = null;
-        }
-        if (templateViewer != null) {
-            EditorFactory.getInstance().releaseEditor(templateViewer);
-            templateViewer = null;
-        }
-    }
-
-
-    private void updateViewerForSelection() {
-        if (pasteableList.getSelectedValue() == null) {
-            selectedItemViewer.getDocument().setText("");
-            return;
-        }
-        String fullString = (String) pasteableList.getSelectedValue();
-        fullString = StringUtil.convertLineSeparators(fullString);
-
-        selectedItemViewer.getDocument().setText(fullString);
-    }
-
-    public ChooseContentUI(Project project, Editor editor) {
+    public ChooseContentUI(Project project, Editor editor, ChoosePasteAllAction callback) {
         this();
         this.project = project;
         this.editor = editor;
+        this.callback = callback;
+
+        int idx = callback.getTplIdx();
+        if (idx >= 0 && idx < templateList.size()) {
+            templateBox.setSelectedIndex(idx);
+        }
+        if (callback.getTemplate() != null) {
+            templateViewer.getDocument().setText(callback.getTemplate());
+        }
+        useTemplatChk.setSelected(callback.getUseTemplate());
+
+        if (callback.isOlderFirst()) {
+            olderFirst.setSelected(true);
+        } else {
+            recentFirst.setSelected(true);
+        }
+
     }
 
-// --------------------- GETTER / SETTER METHODS ---------------------
+    // -------------------------- OTHER METHODS --------------------------
 
-    public JRadioButton getOlderFirst() {
-        return olderFirst;
+    /**
+     * @noinspection ALL
+     */
+    public JComponent $$$getRootComponent$$$() {
+        return contentPane;
     }
-
-    public JList getPasteableList() {
-        return pasteableList;
-    }
-
-    public JRadioButton getRecentFirst() {
-        return recentFirst;
-    }
-
-    public JComboBox getTemplateBox() {
-        return templateBox;
-    }
-
-    public Editor getTemplateViewer() {
-        return templateViewer;
-    }
-
-    public JCheckBox getUseTemplatChk() {
-        return useTemplatChk;
-    }
-
-
 }
