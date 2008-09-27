@@ -85,7 +85,7 @@
             <implementation-class>osmedile.intellij.pasteall.InitPasteAll</implementation-class>
         </component>
     </application-components>
-    <version>1.0</version>
+    <version>1.1</version>
     <vendor email="osmedile@gmail.com">Olivier Smedile</vendor>
     <idea-version since-build="7361" />
     <actions>
