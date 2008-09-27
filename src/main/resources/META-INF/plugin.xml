@@ -55,7 +55,7 @@
     <p>
     Changes in paste dialog:
     <ul>
-        <li>Focus list of items by default</li>
+        <li>Focus list of items by default (doesn't works on Mac OS X)</li>
         <li>"Use template is automatically selected when selecting or modifying a template</li>
         <li>No new line is added if a template already ends with an empty line</li>
     </ul>    
