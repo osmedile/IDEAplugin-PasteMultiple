@@ -7,7 +7,6 @@ import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.ide.CopyPasteManager;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.ColoredListCellRenderer;
@@ -64,7 +63,6 @@ public class ChooseContentUI extends JDialog {
      */
     private Editor selectedItemViewer;
 
-    private Project project;
     private Editor editor;
 
     /**
@@ -417,7 +415,7 @@ public class ChooseContentUI extends JDialog {
 
         //Viewer
         selectedItemViewer = EditorFactory.getInstance().createViewer(
-                EditorFactory.getInstance().createDocument(""), project);
+                EditorFactory.getInstance().createDocument(""));
         selectedItemViewer.getComponent().setPreferredSize(new Dimension(300, 150));
         selectedItemViewer.getSettings().setFoldingOutlineShown(false);
         selectedItemViewer.getSettings().setLineNumbersShown(true);
@@ -429,7 +427,7 @@ public class ChooseContentUI extends JDialog {
 
         //templates
         templateViewer = EditorFactory.getInstance().createEditor(
-                EditorFactory.getInstance().createDocument(""), project);
+                EditorFactory.getInstance().createDocument(""));
         templateViewer.getComponent().setPreferredSize(new Dimension(300, 300));
         templateViewer.getSettings().setFoldingOutlineShown(false);
         templateViewer.getSettings().setLineNumbersShown(true);
@@ -586,9 +584,8 @@ public class ChooseContentUI extends JDialog {
         updateViewerForSelection();
     }
 
-    public ChooseContentUI(Project project, Editor editor, ChoosePasteAllAction callback) {
+    public ChooseContentUI(Editor editor, ChoosePasteAllAction callback) {
         this();
-        this.project = project;
         this.editor = editor;
         this.callback = callback;
 

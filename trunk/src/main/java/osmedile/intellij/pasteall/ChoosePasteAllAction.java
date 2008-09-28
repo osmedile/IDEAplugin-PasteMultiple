@@ -41,7 +41,7 @@ public class ChoosePasteAllAction extends EditorAction {
 
                 //reapply saved configuration of dialog
                 ChooseContentUI chooseContentUI =
-                        new ChooseContentUI(editor.getProject(), editor, ChoosePasteAllAction.this);
+                        new ChooseContentUI(editor, ChoosePasteAllAction.this);
 
 
                 chooseContentUI.pack();
