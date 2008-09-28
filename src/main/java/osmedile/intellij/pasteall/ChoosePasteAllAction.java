@@ -40,12 +40,7 @@ public class ChoosePasteAllAction extends EditorAction {
             public void executeWriteAction(Editor editor, DataContext dc) {
 
                 //reapply saved configuration of dialog
-                ChooseContentUI chooseContentUI =
-                        new ChooseContentUI(editor, ChoosePasteAllAction.this);
-
-
-                chooseContentUI.pack();
-                chooseContentUI.setLocationByPlatform(true);
+                ChooseContentUI chooseContentUI =  new ChooseContentUI(editor, ChoosePasteAllAction.this);
                 chooseContentUI.setVisible(true);
             }
         });
