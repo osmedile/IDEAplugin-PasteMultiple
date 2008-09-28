@@ -479,9 +479,6 @@ public class ChooseContentUI extends JDialog {
         });
 
         rebuildListContent();
-
-        pasteableList.requestFocus();
-        pasteableList.requestFocusInWindow();
     }
 
     private void createUIComponents() {
@@ -604,8 +601,10 @@ public class ChooseContentUI extends JDialog {
             recentFirst.setSelected(true);
         }
 
+
+        this.pack();
+        this.setLocationByPlatform(true);
+        pasteableList.requestFocus();
+        pasteableList.requestFocusInWindow();
     }
-
-    // -------------------------- OTHER METHODS --------------------------
-
 }
