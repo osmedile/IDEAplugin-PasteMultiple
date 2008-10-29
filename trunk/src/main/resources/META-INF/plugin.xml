@@ -7,7 +7,7 @@
        <h2>Paste multiple contents at once</h2>
        <p>
        Enhance the default paste from history action. By allowing you to select
-       multiple content and paste all of them at once.<br /><br />
+       multiple content and paste all of them at once.<br><br>
 
        Features:
        <ul>
@@ -18,7 +18,7 @@
        <span style="font-weight: bolder; font-style: italic; color: gray;">
             Warning: only $SELECTION$ variable of Live templates is evaluated
        </span>
-       <br />
+       <br>
        This action is available under Edit Menu, or via the shortcut "alt shift V".
        </p>
 
@@ -33,7 +33,7 @@
        <span style="font-weight: bolder; font-style: italic; color: gray;">
            Warning: that only $SELECTION$ variable of Live templates is evaluated
        </span>
-       <br />
+       <br>
         All actions are available under Edit menu -> "Paste multiple".
        </p>
 
@@ -42,8 +42,8 @@
             If you don't want to paste all the clipboard with the previous actions,
             you can use mark actions.
             When you set the mark, only contents copied after that will be pasted.
-            This apply to all actions.<br />
-            <br />
+            This apply to all actions.<br>
+            <br>
             Mark actions are available under Edit menu -> "Paste multiple".
         </p>
 
