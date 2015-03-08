@@ -7,7 +7,6 @@ import com.intellij.openapi.editor.RawText;
 import com.intellij.openapi.editor.SelectionModel;
 import com.intellij.openapi.util.text.LineTokenizer;
 import com.intellij.openapi.util.text.StringUtil;
-import org.apache.commons.collections.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,7 +42,7 @@ public class PasteUtils {
         }
         RawText raw = null;
         try {
-            raw = (RawText) tran.getTransferData(RawText.FLAVOR);
+            raw = (RawText) tran.getTransferData(RawText.getDataFlavor());
         } catch (UnsupportedFlavorException e) {
             // OK. raw will be null and we'll get plain string
         } catch (IOException e) {
@@ -115,9 +114,10 @@ public class PasteUtils {
 
         StringBuilder sb = new StringBuilder();
 
-        if (olderFirst) {
-            CollectionUtils.reverseArray(values);
-        }
+        //TODO
+//        if (olderFirst) {
+//            CollectionUtils.reverseArray(values);
+//        }
         for (String value : values) {
             if (template != null) {
                 sb.append(template.replaceAll("\\$SELECTION\\$", value));
@@ -148,7 +148,7 @@ public class PasteUtils {
      * @param editor
      * @param content string to insert in editor at caret.
      *
-     * @see EditorModificationUtil#pasteFromClipboardAsBlock(com.intellij.openapi.editor.Editor)
+     * @see EditorModificationUtil#pasteTransferableAsBlock(com.intellij.openapi.editor.Editor, com.intellij.util.Producer)
      */
     public static void insertStringAsBlock(@Nullable Editor editor,
                                            @Nullable String content) {
