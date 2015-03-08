@@ -45,9 +45,9 @@
     </developers>
 
     <scm>
-        <connection>scm:svn:http://idea-pasteall.googlecode.com/svn/trunk/</connection>
-        <developerConnection>scm:svn:https://idea-pasteall.googlecode.com/svn/trunk</developerConnection>
-        <url>http://idea-pasteall.googlecode.com/svn/trunk</url>
+        <connection>scm:git:https://github.com/osmedile/IDEAPasteAll-plugin.git</connection>
+        <developerConnection>scm:git:https://github.com/osmedile/IDEAPasteAll-plugin.git</developerConnection>
+        <url>https://github.com/osmedile/IDEAPasteAll-plugin.git</url>
     </scm>
 
 

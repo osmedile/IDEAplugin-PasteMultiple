@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project relativePaths="false" version="4">
-  <component name="AntConfiguration">
-    <defaultAnt bundledAnt="true" />
-  </component>
+<project version="4">
   <component name="Archetypes.Configuration">
     <option name="archetypesFileLocation" value="archetypes.xml" />
     <option name="workingDirectory" value="" />
@@ -51,7 +48,6 @@
   </component>
   <component name="CompilerConfiguration">
     <option name="DEFAULT_COMPILER" value="Javac" />
-    <option name="DEPLOY_AFTER_MAKE" value="0" />
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />
       <entry name=".+\.(gif|png|jpeg|jpg)" />
@@ -67,6 +63,11 @@
       <entry name="?*.dtd" />
       <entry name="?*.tld" />
     </wildcardResourcePatterns>
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="false">
+        <processorPath useClasspath="true" />
+      </profile>
+    </annotationProcessing>
   </component>
   <component name="ContextViewer">
     <option name="HIGHLIHGT_COLOR" value="ede4ce" />
@@ -79,6 +80,7 @@
     <option name="DECOMPILATION_SOURCE_DIR" />
     <option name="JAD_PATH" value="E:\Applications\idea7241\bin\jad.exe" />
   </component>
+  <component name="CopyrightManager" default="" />
   <component name="DBNavigator.Project.CodeEditorSettings">
     <code-completion>
       <basic-scheme>
@@ -229,6 +231,7 @@
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
     <option name="MAXIMUM_HEAP_SIZE" value="128" />
   </component>
+  <component name="Encoding" useUTFGuessing="true" native2AsciiForPropertiesFiles="false" />
   <component name="EncodingComponent">
     <option name="projectEncoding" />
   </component>
@@ -261,18 +264,6 @@
     <Eclipse-Importer new-module-in-eclipse-proj="false" check-eclipse-changes="false">
       <path-vars />
     </Eclipse-Importer>
-  </component>
-  <component name="InspectionProjectProfileManager">
-    <option name="PROJECT_PROFILE" value="Project Default" />
-    <option name="USE_PROJECT_LEVEL_SETTINGS" value="false" />
-    <scopes />
-    <profiles>
-      <profile version="1.0" is_locked="false">
-        <option name="myName" value="Project Default" />
-        <option name="myLocal" value="false" />
-      </profile>
-    </profiles>
-    <list size="0" />
   </component>
   <component name="InspectorGeneralConfiguration">
     <option name="MAKE_CLASSES_AND_METHODS_FINAL_IF_NOT_OVERRIDDEN" value="false" />
@@ -336,13 +327,6 @@
     <option name="IS_GET_METHOD_ICONS_ENABLED" value="true" />
     <option name="IS_SET_METHOD_ICONS_ENABLED" value="true" />
     <option name="IS_UNIT_TEST_ENABLED" value="true" />
-  </component>
-  <component name="JavacSettings">
-    <option name="DEBUGGING_INFO" value="true" />
-    <option name="GENERATE_NO_WARNINGS" value="false" />
-    <option name="DEPRECATION" value="true" />
-    <option name="ADDITIONAL_OPTIONS_STRING" value="" />
-    <option name="MAXIMUM_HEAP_SIZE" value="128" />
   </component>
   <component name="JavadocGenerationManager">
     <option name="OUTPUT_DIRECTORY" />
@@ -528,7 +512,7 @@
       <SplitterProportionsDataImpl />
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="IDEA 7718" project-jdk-type="IDEA JDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="IDEA jdk" project-jdk-type="IDEA JDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
   <component name="ResourceManagerContainer">
@@ -561,9 +545,6 @@
     <option name="LOCK_ON_CHECKOUT" value="false" />
     <option name="UNLOCK_ON_CHECKIN" value="false" />
   </component>
-  <component name="SvnBranchConfigurationManager">
-    <option name="myVersion" value="123" />
-  </component>
   <component name="TL_PLUGIN">
     <option name="myModel">
       <IssueLinkModel />
@@ -578,7 +559,7 @@
   </component>
   <component name="TrackLink.CheckinHandlerFactory" checkbox="false" filtering="false" dialogWidth="700" dialogHeight="580" />
   <component name="VcsDirectoryMappings">
-    <mapping directory="" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
   </component>
   <component name="VssConfiguration">
     <option name="CLIENT_PATH" value="" />
@@ -658,4 +639,3 @@
     <option name="DEFAULT_LAYOUT_MANAGER" value="GridBagLayout" />
   </component>
 </project>
-
