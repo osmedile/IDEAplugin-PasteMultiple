@@ -13,7 +13,7 @@
        <ul>
             <li>Filter you clipboard, to quickly find what to paste</li>
             <li>Choose in which order you want to paste (older first or recent first)</li>
-            <li>Optionnaly, apply a live template to pasted items</li>
+            <li>Optionally, apply a live template to pasted items</li>
        </ul>
        <span style="font-weight: bolder; font-style: italic; color: gray;">
             Warning: only $SELECTION$ variable of Live templates is evaluated
@@ -66,7 +66,7 @@
     <ul>
        <li>Filter you clipboard, to quickly find what to paste</li>
        <li>Choose in which order you want to paste (older first or recent first)</li>
-       <li>Optionnaly, apply a live template to pasted items</li>
+       <li>Optionally, apply a live template to pasted items</li>
     </ul>
     Others actions implemented:
     <ul>
